@@ -1,0 +1,18 @@
+services:
+  p2p-media-next:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: p2p-media-next
+    hostname: p2p-media-next
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - p2p-net
+
+networks:
+  p2p-net:
+    driver: bridge
