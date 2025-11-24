@@ -77,6 +77,31 @@ const P2PManager = forwardRef(({
   useImperativeHandle(ref, () => ({
     requestPeer: (targetUser) => {
       return requestPeer(targetUser);
+    },
+    closePeer: (targetUser) => {
+      const peer = peersRef.current[targetUser];
+      if (peer) {
+        console.log(`🔌 Cerrando peer con ${targetUser}`);
+        peer.destroy();
+        delete peersRef.current[targetUser];
+        delete remoteStreamsRef.current[targetUser];
+        setPeers(prev => {
+          const newPeers = prev.filter(p => p !== targetUser);
+          if (onPeersUpdateRef.current) onPeersUpdateRef.current(newPeers);
+          return newPeers;
+        });
+      }
+    },
+    closeAllPeers: () => {
+      console.log('🔌 Cerrando todos los peers');
+      Object.keys(peersRef.current).forEach(targetUser => {
+        const peer = peersRef.current[targetUser];
+        if (peer) peer.destroy();
+      });
+      peersRef.current = {};
+      remoteStreamsRef.current = {};
+      setPeers([]);
+      if (onPeersUpdateRef.current) onPeersUpdateRef.current([]);
     }
   }));
 
