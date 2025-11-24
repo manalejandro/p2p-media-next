@@ -257,11 +257,56 @@ const P2PManager = forwardRef(({
     });
 
     peer.on('connect', () => {
+      console.log(`✅ Peer conectado con ${targetUser}`);
       setPeers(prev => {
         const newPeers = [...prev, targetUser];
         if (onPeersUpdateRef.current) onPeersUpdateRef.current(newPeers);
         return newPeers;
       });
+      
+      // Iniciar monitoreo de estadísticas WebRTC cada 1 segundo
+      const statsMonitor = setInterval(async () => {
+        if (!peer._pc || peer.destroyed) {
+          clearInterval(statsMonitor);
+          return;
+        }
+        
+        try {
+          const stats = await peer._pc.getStats();
+          let bytesReceived = 0;
+          let bytesSent = 0;
+          
+          stats.forEach(report => {
+            if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+              bytesReceived += report.bytesReceived || 0;
+            }
+            if (report.type === 'outbound-rtp' && report.mediaType === 'video') {
+              bytesSent += report.bytesSent || 0;
+            }
+          });
+          
+          // Guardar stats anteriores para calcular delta
+          if (!peer._lastStats) {
+            peer._lastStats = { bytesReceived, bytesSent, timestamp: Date.now() };
+          } else {
+            const deltaTime = (Date.now() - peer._lastStats.timestamp) / 1000;
+            const deltaReceived = bytesReceived - peer._lastStats.bytesReceived;
+            const deltaSent = bytesSent - peer._lastStats.bytesSent;
+            
+            if (deltaTime > 0) {
+              downloadBytes.current += deltaReceived;
+              uploadBytes.current += deltaSent;
+            }
+            
+            peer._lastStats = { bytesReceived, bytesSent, timestamp: Date.now() };
+          }
+        } catch (err) {
+          // Ignorar errores de stats
+        }
+      }, 1000);
+      
+      // Guardar el interval en el peer para limpiarlo después
+      peer._statsMonitor = statsMonitor;
     });
 
     peer.on('data', (data) => {
@@ -277,6 +322,10 @@ const P2PManager = forwardRef(({
     });
 
     peer.on('close', () => {
+      console.log(`🔌 Peer cerrado con ${targetUser}`);
+      if (peer._statsMonitor) {
+        clearInterval(peer._statsMonitor);
+      }
       if (peersRef.current[targetUser] === peer) {
         delete peersRef.current[targetUser];
         delete remoteStreamsRef.current[targetUser];
@@ -290,6 +339,9 @@ const P2PManager = forwardRef(({
 
     peer.on('error', (err) => {
       console.error('❌ Error en peer', targetUser, ':', err.message || err);
+      if (peer._statsMonitor) {
+        clearInterval(peer._statsMonitor);
+      }
       if (peersRef.current[targetUser] === peer) {
         delete peersRef.current[targetUser];
         delete remoteStreamsRef.current[targetUser];

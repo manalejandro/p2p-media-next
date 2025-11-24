@@ -22,7 +22,10 @@ export default function Home() {
   const p2pManagerRef = useRef(null);
   const [stats, setStats] = useState({
     http: 0,
-    p2p: 0
+    p2p: 0,
+    uploadSpeed: 0,
+    downloadSpeed: 0,
+    peers: 0
   });
 
   // URLs de ejemplo - usando proxy del servidor
@@ -135,10 +138,13 @@ export default function Home() {
   }, []);
 
   const handlePeerStats = useCallback((data) => {
-    // Actualizar estadísticas P2P - usar los deltas que envía el componente
+    // Actualizar estadísticas P2P completas
     setStats(prev => ({
       ...prev,
-      p2p: prev.p2p + (data.downloadSpeed || 0) * 5 // velocidad * 5 segundos = bytes descargados en este intervalo
+      p2p: prev.p2p + (data.downloadSpeed || 0) * 5,
+      uploadSpeed: data.uploadSpeed || 0,
+      downloadSpeed: data.downloadSpeed || 0,
+      peers: data.peers || 0
     }));
   }, []);
 
@@ -267,9 +273,32 @@ export default function Home() {
                 Streaming de video con tecnología P2P y chat en tiempo real
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">WebRTC Activo</span>
+            <div className="flex items-center space-x-4">
+              {/* Estadísticas P2P */}
+              {peers > 0 && (
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-gray-600">👥</span>
+                    <span className="font-semibold text-blue-600">{stats.peers}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-gray-600">⬆️</span>
+                    <span className="font-semibold text-green-600">
+                      {(stats.uploadSpeed / 1024).toFixed(1)} KB/s
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-gray-600">⬇️</span>
+                    <span className="font-semibold text-purple-600">
+                      {(stats.downloadSpeed / 1024).toFixed(1)} KB/s
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-600">WebRTC Activo</span>
+              </div>
             </div>
           </div>
         </div>
@@ -374,6 +403,46 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            )}
+
+            {/* Panel de Estadísticas P2P */}
+            {stats.peers > 0 && (
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-lg p-4 border-2 border-blue-200">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                  <span className="mr-2">📊</span>
+                  Estadísticas P2P en Tiempo Real
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-3 shadow">
+                    <p className="text-xs text-gray-600 mb-1">👥 Peers Conectados</p>
+                    <p className="text-2xl font-bold text-blue-600">{stats.peers}</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 shadow">
+                    <p className="text-xs text-gray-600 mb-1">⬆️ Subida</p>
+                    <p className="text-xl font-bold text-green-600">
+                      {(stats.uploadSpeed / 1024).toFixed(1)}
+                    </p>
+                    <p className="text-xs text-gray-500">KB/s</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 shadow">
+                    <p className="text-xs text-gray-600 mb-1">⬇️ Descarga</p>
+                    <p className="text-xl font-bold text-purple-600">
+                      {(stats.downloadSpeed / 1024).toFixed(1)}
+                    </p>
+                    <p className="text-xs text-gray-500">KB/s</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 shadow">
+                    <p className="text-xs text-gray-600 mb-1">📦 Total P2P</p>
+                    <p className="text-lg font-bold text-orange-600">
+                      {(stats.p2p / 1024 / 1024).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-500">MB</p>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Video Player */}
