@@ -437,8 +437,8 @@ export default function Home() {
               />
             </div>
 
-            {/* Chat */}
-            <div className="h-full">
+            {/* Chat - altura fija con scroll interno */}
+            <div className="h-[calc(100vh-12rem)] min-h-[600px]">
               <Chat 
                 username={username}
                 onUsernameChange={setUsername}

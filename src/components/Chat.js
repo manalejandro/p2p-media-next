@@ -195,7 +195,7 @@ export default function Chat({ username, onUsernameChange, onSocketReady, onWatc
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-white font-bold text-lg">Chat en Vivo</h3>
           <div className="flex items-center space-x-2">
@@ -207,13 +207,12 @@ export default function Chat({ username, onUsernameChange, onSocketReady, onWatc
       </div>
 
       {/* Usuarios conectados */}
-      <div className="bg-gray-50 p-3 border-b">
+      <div className="bg-gray-50 p-3 border-b flex-shrink-0">
         <h4 className="text-xs font-semibold text-gray-600 mb-2">
           USUARIOS CONECTADOS ({users.length})
         </h4>
         
-        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-          {users.map((user, index) => {
+        <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">{users.map((user, index) => {
             const isCurrentUser = user === username;
             const hasThumbnail = userThumbnails[user]?.thumbnail;
             const isHovered = hoveredUser === user;
@@ -329,7 +328,7 @@ export default function Chat({ username, onUsernameChange, onSocketReady, onWatc
       </div>
 
       {/* Input de mensaje */}
-      <form onSubmit={sendMessage} className="p-4 bg-white border-t">
+      <form onSubmit={sendMessage} className="p-4 bg-white border-t flex-shrink-0">
         <div className="flex space-x-2">
           <input
             type="text"
