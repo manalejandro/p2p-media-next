@@ -420,7 +420,7 @@ export default function Home() {
             </div>
             )}
 
-            {/* Video Player */
+            {/* Video Player */}
             <div className="bg-white rounded-lg shadow-lg p-4" ref={videoPlayerRef}>
               {watchingUser ? (
                 // Modo watching: mostrar stream remoto o mensaje de carga
